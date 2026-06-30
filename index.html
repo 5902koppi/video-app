@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1115">
+  <title>動画メモ</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>🎬 動画メモ</h1>
+    <button id="addBtn" class="primary-btn" aria-label="動画を追加">＋ 追加</button>
+  </header>
+
+  <!-- 検索・並べ替え -->
+  <section class="toolbar">
+    <input id="searchInput" type="search" placeholder="🔍 タイトル・タグで検索" autocomplete="off">
+    <div class="toolbar-row">
+      <select id="sortSelect" aria-label="並べ替え">
+        <option value="new">新しい順</option>
+        <option value="old">古い順</option>
+        <option value="rating">★評価が高い順</option>
+        <option value="title">タイトル順</option>
+      </select>
+      <button id="favFilterBtn" class="chip" aria-pressed="false">❤ お気に入りのみ</button>
+    </div>
+    <div id="tagBar" class="tag-bar"></div>
+  </section>
+
+  <!-- 一覧 -->
+  <main id="list" class="list"></main>
+  <p id="emptyMsg" class="empty hidden">まだ動画がありません。「＋ 追加」から保存しましょう。</p>
+
+  <!-- フッター（バックアップ） -->
+  <footer class="app-footer">
+    <button id="exportBtn" class="ghost-btn">⬆ 書き出し（バックアップ）</button>
+    <button id="importBtn" class="ghost-btn">⬇ 読み込み（復元）</button>
+    <input id="importFile" type="file" accept="application/json,.json" hidden>
+    <span id="count" class="count"></span>
+  </footer>
+
+  <!-- 追加/編集モーダル -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <h2 id="modalTitle">動画を追加</h2>
+      <label>URL <span class="req">必須</span>
+        <input id="fUrl" type="url" placeholder="https://..." inputmode="url">
+      </label>
+      <div class="fetch-row">
+        <button id="fetchBtn" type="button" class="ghost-btn small">🔄 タイトル/サムネ自動取得</button>
+        <span id="fetchStatus" class="fetch-status"></span>
+      </div>
+      <label>タイトル
+        <input id="fTitle" type="text" placeholder="動画のタイトル">
+      </label>
+      <label>タグ（スペース / カンマ区切り）
+        <input id="fTags" type="text" placeholder="例: 音楽 ライブ お笑い" autocomplete="off">
+      </label>
+      <div class="field-row">
+        <div>
+          <span class="field-label">評価</span>
+          <div id="fStars" class="stars-edit" role="radiogroup" aria-label="星評価">
+            <span data-v="1">★</span><span data-v="2">★</span><span data-v="3">★</span><span data-v="4">★</span><span data-v="5">★</span>
+          </div>
+        </div>
+        <button id="fFav" type="button" class="fav-toggle" aria-pressed="false">❤ お気に入り</button>
+      </div>
+      <img id="fThumbPreview" class="thumb-preview hidden" alt="サムネイルプレビュー">
+      <div class="modal-actions">
+        <button id="cancelBtn" class="ghost-btn">キャンセル</button>
+        <button id="deleteBtn" class="danger-btn hidden">削除</button>
+        <button id="saveBtn" class="primary-btn">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 再生（YouTube埋め込み）モーダル -->
+  <div id="player" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-card player-card">
+      <div id="playerBox" class="player-box"></div>
+      <div class="modal-actions">
+        <a id="openExternal" class="ghost-btn" target="_blank" rel="noopener">↗ サイトで開く</a>
+        <button id="closePlayer" class="primary-btn">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
