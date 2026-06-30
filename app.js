@@ -18,8 +18,15 @@
     catch { return fallback; }
   }
   function save() {
-    localStorage.setItem(STORE_KEY, JSON.stringify(videos));
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify(videos));
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      return true;
+    } catch (e) {
+      // 容量超過（写真の入れすぎ等）
+      alert('保存容量がいっぱいです。サムネ写真を減らすか、不要な動画を削除してください。\n（「書き出し」でバックアップも取れます）');
+      return false;
+    }
   }
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => document.querySelectorAll(s);
@@ -206,11 +213,37 @@
     $('#fTags').value = v ? v.tags.join(' ') : '';
     $('#fetchStatus').textContent = '';
     $('#deleteBtn').classList.toggle('hidden', !id);
-    updateStarsEdit(); updateFavToggle(); updateThumbPreview();
+    updateStarsEdit(); updateFavToggle(); updateThumbPreview(); renderTagSuggest();
     $('#modal').classList.remove('hidden');
     if (!id) setTimeout(() => $('#fUrl').focus(), 50);
   }
   function closeModal() { $('#modal').classList.add('hidden'); editingId = null; }
+
+  // フォームのタグ入力欄から現在のタグ配列を取得
+  function currentFormTags() { return parseTags($('#fTags').value); }
+
+  // 過去に使ったタグを「タップで選べるチップ」として表示
+  function renderTagSuggest() {
+    const box = $('#fTagSuggest');
+    box.innerHTML = '';
+    const selected = currentFormTags();
+    allTags().forEach(tag => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip' + (selected.includes(tag) ? ' on' : '');
+      b.textContent = '#' + tag;
+      b.onclick = () => toggleFormTag(tag);
+      box.appendChild(b);
+    });
+  }
+
+  function toggleFormTag(tag) {
+    const tags = currentFormTags();
+    const i = tags.indexOf(tag);
+    if (i >= 0) tags.splice(i, 1); else tags.push(tag);
+    $('#fTags').value = tags.join(' ');
+    renderTagSuggest();
+  }
 
   function updateStarsEdit() {
     $$('#fStars span').forEach(s => s.classList.toggle('on', Number(s.dataset.v) <= form.rating));
@@ -220,6 +253,42 @@
     const img = $('#fThumbPreview');
     if (form.thumbnail) { img.src = form.thumbnail; img.classList.remove('hidden'); }
     else img.classList.add('hidden');
+    $('#clearThumbBtn').classList.toggle('hidden', !form.thumbnail);
+  }
+
+  // アップロード画像を縮小してdataURL化（localStorage節約のため最大480px・JPEG）
+  function imageToThumb(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('読み込み失敗'));
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('画像を開けません'));
+        img.onload = () => {
+          const max = 480;
+          const scale = Math.min(1, max / Math.max(img.width, img.height));
+          const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.7));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function onThumbFile(file) {
+    if (!file) return;
+    try {
+      $('#fetchStatus').textContent = '画像を処理中…';
+      form.thumbnail = await imageToThumb(file);
+      updateThumbPreview();
+      $('#fetchStatus').textContent = '写真を設定しました';
+    } catch (e) {
+      $('#fetchStatus').textContent = '画像の設定に失敗: ' + e.message;
+    }
   }
 
   async function doFetch() {
@@ -329,6 +398,14 @@
       updateStarsEdit();
     };
     $('#fFav').onclick = () => { form.favorite = !form.favorite; updateFavToggle(); };
+
+    // タグ入力欄を手で編集したら候補チップの選択状態も更新
+    $('#fTags').oninput = renderTagSuggest;
+
+    // 写真アップロード（サムネ手動設定）
+    $('#uploadThumbBtn').onclick = () => $('#thumbFile').click();
+    $('#thumbFile').onchange = (e) => { onThumbFile(e.target.files[0]); e.target.value = ''; };
+    $('#clearThumbBtn').onclick = () => { form.thumbnail = ''; updateThumbPreview(); };
 
     $('#searchInput').oninput = render;
     $('#sortSelect').value = settings.sort;

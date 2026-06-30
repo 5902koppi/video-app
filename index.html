@@ -60,6 +60,7 @@
       <label>タグ（スペース / カンマ区切り）
         <input id="fTags" type="text" placeholder="例: 音楽 ライブ お笑い" autocomplete="off">
       </label>
+      <div id="fTagSuggest" class="tag-suggest"></div>
       <div class="field-row">
         <div>
           <span class="field-label">評価</span>
@@ -68,6 +69,11 @@
           </div>
         </div>
         <button id="fFav" type="button" class="fav-toggle" aria-pressed="false">❤ お気に入り</button>
+      </div>
+      <div class="thumb-actions">
+        <button id="uploadThumbBtn" type="button" class="ghost-btn small">🖼 写真をアップロード</button>
+        <button id="clearThumbBtn" type="button" class="ghost-btn small hidden">✕ サムネを削除</button>
+        <input id="thumbFile" type="file" accept="image/*" hidden>
       </div>
       <img id="fThumbPreview" class="thumb-preview hidden" alt="サムネイルプレビュー">
       <div class="modal-actions">

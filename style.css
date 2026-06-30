@@ -149,6 +149,14 @@ button, .ghost-btn { font-family: inherit; font-size: 1rem; cursor: pointer; }
   padding: 10px 14px; border-radius: 10px;
 }
 .fav-toggle[aria-pressed="true"] { background: rgba(255,90,122,.15); border-color: var(--fav); color: var(--fav); }
+.tag-suggest { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -6px; }
+.tag-suggest:empty { display: none; }
+.tag-suggest .chip {
+  background: var(--surface-2); border: 1px solid var(--border); color: var(--muted);
+  padding: 6px 11px; border-radius: 999px; font-size: .8rem;
+}
+.tag-suggest .chip.on { background: rgba(91,140,255,.18); border-color: var(--accent); color: var(--text); }
+.thumb-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .thumb-preview { width: 100%; max-height: 200px; object-fit: contain; border-radius: 10px; background: var(--bg); }
 .modal-actions { display: flex; gap: 10px; margin-top: 6px; }
 .modal-actions .primary-btn { flex: 1; }
