@@ -78,6 +78,32 @@
     return { title: '', thumbnail: '' };
   }
 
+  // タグ名から固有の色相を決定（同じタグは常に同じ色＝POPなカラフル表示）
+  function tagHue(tag) {
+    let h = 0;
+    for (let i = 0; i < tag.length; i++) h = (h * 31 + tag.charCodeAt(i)) % 360;
+    return h;
+  }
+  // チップ要素に色を塗る（on=選択中は濃い塗り、通常は淡いパステル）
+  function paintChip(el, tag, on) {
+    const hue = tagHue(tag);
+    el.style.borderColor = 'transparent';
+    if (on) {
+      el.style.background = `hsl(${hue} 80% 62%)`;
+      el.style.color = '#fff';
+      el.style.boxShadow = `0 4px 12px hsla(${hue} 80% 55% / .35)`;
+    } else {
+      el.style.background = `hsl(${hue} 100% 95%)`;
+      el.style.color = `hsl(${hue} 55% 42%)`;
+      el.style.boxShadow = 'none';
+    }
+  }
+  // カード用タグ（静的・淡いパステル）
+  function tagChipHtml(t) {
+    const hue = tagHue(t);
+    return `<span class="t" style="background:hsl(${hue} 100% 95%);color:hsl(${hue} 55% 42%)">#${escapeHtml(t)}</span>`;
+  }
+
   // ============ レンダリング ============
   function allTags() {
     const counts = {};
@@ -90,8 +116,9 @@
     bar.innerHTML = '';
     allTags().forEach(tag => {
       const b = document.createElement('button');
-      b.className = 'chip' + (activeTags.has(tag) ? ' active' : '');
+      b.className = 'chip';
       b.textContent = '#' + tag;
+      paintChip(b, tag, activeTags.has(tag));
       b.onclick = () => {
         activeTags.has(tag) ? activeTags.delete(tag) : activeTags.add(tag);
         render();
@@ -156,7 +183,7 @@
         <div class="card-body">
           <div class="card-title" data-id="${v.id}">${escapeHtml(v.title || v.url)}</div>
           <div class="card-host">${escapeHtml(hostOf(v.url))}</div>
-          <div class="card-tags">${v.tags.map(t => `<span class="t">#${escapeHtml(t)}</span>`).join('')}</div>
+          <div class="card-tags">${v.tags.map(tagChipHtml).join('')}</div>
           <div class="card-meta">
             <span class="stars">${starHtml(v.rating)}</span>
             <span class="fav-mark ${v.favorite ? '' : 'off'}">❤</span>
@@ -230,8 +257,9 @@
     allTags().forEach(tag => {
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = 'chip' + (selected.includes(tag) ? ' on' : '');
+      b.className = 'chip';
       b.textContent = '#' + tag;
+      paintChip(b, tag, selected.includes(tag));
       b.onclick = () => toggleFormTag(tag);
       box.appendChild(b);
     });

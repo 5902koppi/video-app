@@ -1,5 +1,5 @@
 /* オフライン用の最小キャッシュ */
-const CACHE = 'video-memo-v2';
+const CACHE = 'video-memo-v3';
 const ASSETS = [
   './',
   './index.html',
